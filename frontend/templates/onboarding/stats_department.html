@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика отдела | MyCourier{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Статистика отдела</h2>
+        <div class="btn-group">
+            <a href="/onboarding/stats/personal" class="btn btn-outline-primary">Моя статистика</a>
+            <a href="/onboarding/stats/department" class="btn btn-primary active">Статистика отдела</a>
+        </div>
+    </div>
+
+    <!-- Период -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-end">
+                <select class="form-select w-auto" id="periodSelect">
+                    <option value="week">За неделю</option>
+                    <option value="month">За месяц</option>
+                    <option value="year">За год</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Общая статистика отдела -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Всего курьеров</h6>
+                    <h2 class="card-title" id="departmentTotalCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Активных</h6>
+                    <h2 class="card-title" id="departmentActiveCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Новых</h6>
+                    <h2 class="card-title" id="departmentNewCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Средняя конверсия</h6>
+                    <h2 class="card-title" id="departmentConversion">0%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица сотрудников -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Статистика по сотрудникам</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Сотрудник</th>
+                            <th>Всего курьеров</th>
+                            <th>Активных</th>
+                            <th>Новых</th>
+                            <th>Конверсия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesStatsTable">
+                        <!-- Данные будут добавлены через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/stats_department.js') }}"></script>
+{% endblock %} 

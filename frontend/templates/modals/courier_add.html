@@ -1,0 +1,182 @@
+<!-- Модальное окно добавления курьера -->
+<div class="modal fade" id="addCourierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCourierForm" onsubmit="return false;">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               pattern="\+998\d{9}" placeholder="+998XXXXXXXXX" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pinfl" class="form-label">ПИНФЛ</label>
+                        <input type="text" class="form-control" id="pinfl" name="pinfl" 
+                               pattern="\d{14}" maxlength="14" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transport_type" class="form-label">Тип транспорта</label>
+                        <select class="form-select" id="transport_type" name="transport_type" required>
+                            <option value="pedestrian">Пешком</option>
+                            <option value="bicycle">Велосипед</option>
+                            <option value="moto">Мотоцикл</option>
+                            <option value="auto">Автомобиль</option>
+                        </select>
+                    </div>
+                    <div id="addVehicleFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="vehicle_number" class="form-label">Номер транспорта</label>
+                            <input type="text" class="form-control" id="vehicle_number" name="vehicle_number">
+                        </div>
+                        <div class="mb-3" id="addVehicleModelField">
+                            <label for="vehicle_model" class="form-label">Модель транспорта</label>
+                            <input type="text" class="form-control" id="vehicle_model" name="vehicle_model">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="handleAddCourier()">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Оптимизированные стили для анимации */
+.modal.fade {
+    transition: opacity 0.15s linear;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.15s ease-out;
+    transform: translateY(-10px);
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0);
+}
+
+.modal-backdrop {
+    transition: opacity 0.15s linear;
+}
+
+.modal-backdrop.show {
+    opacity: 0.4;
+}
+
+.modal-content {
+    transition: opacity 0.15s linear;
+    opacity: 1;
+}
+
+/* Стили для центрирования */
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+
+/* Оптимизация производительности */
+.modal * {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+}
+</style>
+
+<script>
+// Обработчики для модального окна
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('addCourierModal');
+    
+    // Обработчик перед закрытием
+    modal.addEventListener('hide.bs.modal', function() {
+        // Быстрое скрытие модального окна
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.style.opacity = '0';
+        }
+    });
+
+    // Обработчик после закрытия
+    modal.addEventListener('hidden.bs.modal', function() {
+        const form = document.getElementById('addCourierForm');
+        if (form) {
+            form.reset();
+            const vehicleFields = document.getElementById('addVehicleFields');
+            if (vehicleFields) {
+                vehicleFields.style.display = 'none';
+            }
+        }
+        // Быстрая очистка
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+    });
+
+    // Обработчик при открытии
+    modal.addEventListener('show.bs.modal', function() {
+        const modalContent = this.querySelector('.modal-content');
+        setTimeout(() => modalContent.style.opacity = '1', 50);
+    });
+});
+
+// Функция для обработки добавления курьера
+async function handleAddCourier() {
+    const submitButton = document.querySelector('#addCourierModal .btn-primary');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addCourierModal'));
+    
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        const form = document.getElementById('addCourierForm');
+        const formData = new FormData(form);
+        const data = {
+            full_name: formData.get('full_name').trim(),
+            phone: formData.get('phone').trim(),
+            pinfl: formData.get('pinfl').trim(),
+            transport_type: formData.get('transport_type'),
+            vehicle_number: formData.get('vehicle_number')?.trim() || null,
+            vehicle_model: formData.get('vehicle_model')?.trim() || null
+        };
+
+        const response = await fetch('/api/onboarding/couriers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.detail || 'Ошибка при создании курьера');
+        }
+
+        // Быстрое закрытие и обновление
+        modal.hide();
+        await loadCouriers();
+        showSuccess('Курьер успешно добавлен');
+
+    } catch (error) {
+        console.error('Error:', error);
+        showError(error.message);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Создать';
+    }
+}
+</script> 

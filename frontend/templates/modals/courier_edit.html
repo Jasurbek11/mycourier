@@ -1,0 +1,255 @@
+<div class="modal fade" id="editCourierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="editFormError" class="alert alert-danger" style="display: none;"></div>
+                <form id="editCourierForm">
+                    <input type="hidden" id="editCourierId" name="courier_id">
+                    <div class="mb-3">
+                        <label for="editFullName" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="editFullName" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="editPhone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPinfl" class="form-label">ПИНФЛ</label>
+                        <input type="text" class="form-control" id="editPinfl" name="pinfl" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTransportType" class="form-label">Тип транспорта</label>
+                        <select class="form-select" id="editTransportType" name="transport_type" required>
+                            <option value="pedestrian">Пешком</option>
+                            <option value="bicycle">Велосипед</option>
+                            <option value="moto">Мотоцикл</option>
+                            <option value="auto">Автомобиль</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOnboardingStatus" class="form-label">Статус онбординга</label>
+                        <select class="form-select" id="editOnboardingStatus" name="onboarding_status" required>
+                            <option value="WILL_BE_VERIFIED">Оформится</option>
+                            <option value="VERIFIED">Оформлен</option>
+                            <option value="REJECTED_BY_HUB">Отказ хаба</option>
+                            <option value="REJECTED_BY_COURIER">Отказ курьера</option>
+                        </select>
+                    </div>
+                    <div id="editVehicleFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="editVehicleNumber" class="form-label">Номер транспорта</label>
+                            <input type="text" class="form-control" id="editVehicleNumber" name="vehicle_number">
+                        </div>
+                        <div class="mb-3" id="editVehicleModelField">
+                            <label for="editVehicleModel" class="form-label">Модель транспорта</label>
+                            <input type="text" class="form-control" id="editVehicleModel" name="vehicle_model">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="updateCourier(event)">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Форма создания курьера -->
+<div class="modal fade" id="addCourierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="addFormError" class="alert alert-danger" style="display: none;"></div>
+                <form id="addCourierForm" onsubmit="handleAddCourierForm(event)">
+                    <div class="mb-3">
+                        <label for="add_full_name" class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="add_full_name" name="full_name" required minlength="2">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_phone" class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="add_phone" name="phone" required pattern="^\+998[0-9]{9}$">
+                        <div class="invalid-feedback">
+                            Введите номер в формате +998XXXXXXXXX
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pinfl" class="form-label">ПИНФЛ</label>
+                        <input type="text" class="form-control" id="pinfl" name="pinfl" required pattern="^[0-9]{14}$">
+                        <div class="invalid-feedback">
+                            ПИНФЛ должен содержать 14 цифр
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transport_type" class="form-label">Тип транспорта</label>
+                        <select class="form-select" id="transport_type" name="transport_type" required>
+                            <option value="pedestrian">Пешком</option>
+                            <option value="bicycle">Велосипед</option>
+                            <option value="moto">Мотоцикл</option>
+                            <option value="auto">Автомобиль</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра -->
+<div class="modal fade" id="viewCourierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Информация о курьере</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Вкладки -->
+                <ul class="nav nav-tabs" id="courierTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button">
+                            Основная информация
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="onboarding-tab" data-bs-toggle="tab" data-bs-target="#onboarding" type="button">
+                            Онбординг
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="activation-tab" data-bs-toggle="tab" data-bs-target="#activation" type="button">
+                            Активация
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="warehouse-tab" data-bs-toggle="tab" data-bs-target="#warehouse" type="button">
+                            Склад
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="accounting-tab" data-bs-toggle="tab" data-bs-target="#accounting" type="button">
+                            Выплаты
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Содержимое вкладок -->
+                <div class="tab-content mt-3" id="courierTabContent">
+                    <!-- Основная информация -->
+                    <div class="tab-pane fade show active" id="info" role="tabpanel">
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>ФИО:</strong></div>
+                            <div class="col-8" id="viewFullName">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Телефон:</strong></div>
+                            <div class="col-8" id="viewPhone">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>ПИНФЛ:</strong></div>
+                            <div class="col-8" id="viewPinfl">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Тип транспорта:</strong></div>
+                            <div class="col-8" id="viewTransportType">-</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Статус онбординга:</strong></div>
+                            <div class="col-8" id="viewOnboardingStatus">-</div>
+                        </div>
+                        <!-- Поля для транспорта -->
+                        <div id="viewVehicleFields" style="display: none;">
+                            <div class="row mb-3">
+                                <div class="col-4"><strong>Номер ТС:</strong></div>
+                                <div class="col-8" id="viewVehicleNumber">-</div>
+                            </div>
+                            <div class="row mb-3" id="viewVehicleModelField">
+                                <div class="col-4"><strong>Модель ТС:</strong></div>
+                                <div class="col-8" id="viewVehicleModel">-</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4"><strong>Статус документов:</strong></div>
+                                <div class="col-8" id="viewVehicleDocs">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Онбординг -->
+                    <div class="tab-pane fade" id="onboarding" role="tabpanel">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Событие</th>
+                                    <th>Сотрудник</th>
+                                    <th>Комментарий</th>
+                                </tr>
+                            </thead>
+                            <tbody id="onboardingHistoryTable"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Активация -->
+                    <div class="tab-pane fade" id="activation" role="tabpanel">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Событие</th>
+                                    <th>Сотрудник</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activationHistoryTable"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Склад -->
+                    <div class="tab-pane fade" id="warehouse" role="tabpanel">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Оборудование</th>
+                                    <th>Событие</th>
+                                    <th>Сотрудник</th>
+                                </tr>
+                            </thead>
+                            <tbody id="warehouseHistoryTable"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Выплаты -->
+                    <div class="tab-pane fade" id="accounting" role="tabpanel">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
+                                    <th>Комментарий</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountingHistoryTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div> 

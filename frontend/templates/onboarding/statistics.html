@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика | MyCourier{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="regionFilter" class="form-label">Регион</label>
+                    <select class="form-select" id="regionFilter">
+                        <option value="all">Все регионы</option>
+                        {% for region in regions %}
+                        <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="dateFrom" class="form-label">Дата с</label>
+                    <input type="date" class="form-control" id="dateFrom">
+                </div>
+                <div class="col-md-3">
+                    <label for="dateTo" class="form-label">Дата по</label>
+                    <input type="date" class="form-control" id="dateTo">
+                </div>
+                <div class="col-md-3">
+                    <label for="employeeFilter" class="form-label">Сотрудник</label>
+                    <select class="form-select" id="employeeFilter">
+                        <option value="all">Все сотрудники</option>
+                        {% for employee in employees %}
+                        <option value="{{ employee.id }}">{{ employee.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Показатели -->
+    <div class="row g-4 mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Всего курьеров</h6>
+                    <h2 id="totalCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Оформлены</h6>
+                    <h2 id="verifiedCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Оформятся</h6>
+                    <h2 id="willBeVerifiedCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Отказ хаба</h6>
+                    <h2 id="rejectedByHubCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Отказ курьера</h6>
+                    <h2 id="rejectedByCourierCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- График -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <canvas id="statisticsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Таблица сотрудников -->
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        <th>Всего</th>
+                        <th>Оформлены</th>
+                        <th>Оформятся</th>
+                        <th>Отказ хаба</th>
+                        <th>Отказ курьера</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра курьера -->
+<div class="modal fade" id="viewCourierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Просмотр курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewFormError" class="alert alert-danger" style="display: none;"></div>
+                <div class="mb-3">
+                    <label class="form-label">ФИО</label>
+                    <p id="viewFullName"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Телефон</label>
+                    <p id="viewPhone"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Статус онбординга</label>
+                    <p>
+                        <span class="badge" id="viewOnboardingStatus"></span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Статус документов</label>
+                    <p id="viewDocumentsStatus"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Тип транспорта</label>
+                    <p id="viewTransportType"></p>
+                </div>
+                <div id="viewVehicleFields" style="display: none;">
+                    <div class="mb-3">
+                        <label class="form-label">Номер транспорта</label>
+                        <p id="viewVehicleNumber"></p>
+                    </div>
+                    <div class="mb-3" id="viewVehicleModelField">
+                        <label class="form-label">Модель транспорта</label>
+                        <p id="viewVehicleModel"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Статус документов на транспорт</label>
+                        <p id="viewVehicleDocsStatus"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования -->
+<div class="modal fade" id="editCourierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCourierForm">
+                    <input type="hidden" id="editCourierId">
+                    <div class="mb-3">
+                        <label class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="editFullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="editPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Тип передвижения</label>
+                        <select class="form-select" id="editTransportType" required>
+                            <option value="pedestrian">Пешком</option>
+                            <option value="bicycle">Велосипед</option>
+                            <option value="moto">Мотоцикл</option>
+                            <option value="auto">Автомобиль</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Дополнительные поля для транспорта -->
+                    <div id="editVehicleFields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Номер транспорта</label>
+                            <input type="text" class="form-control" id="editVehicleNumber">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Статус документов</label>
+                            <select class="form-select" id="editDocumentsStatus">
+                                <option value="OK">Все в порядке</option>
+                                <option value="PROBLEM">Проблема с документами</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Поле для марки авто -->
+                    <div class="mb-3" id="editVehicleModelField" style="display: none;">
+                        <label class="form-label">Марка автомобиля</label>
+                        <input type="text" class="form-control" id="editVehicleModel">
+                    </div>
+
+                    <!-- Статус онбординга -->
+                    <div class="mb-3">
+                        <label class="form-label">Статус онбординга</label>
+                        <select class="form-select" id="editOnboardingStatus">
+                            <option value="IN_PROGRESS">Оформляется</option>
+                            <option value="VERIFIED">Оформлен</option>
+                            <option value="REJECTED_BY_HUB">Отказ хаба</option>
+                            <option value="REJECTED_BY_COURIER">Отказ курьера</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditCourier()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления/редактирования -->
+<div class="modal fade" id="courierModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Добавить курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="courierForm">
+                    <input type="hidden" id="courierId">
+                    <div class="mb-3">
+                        <label class="form-label">ФИО</label>
+                        <input type="text" class="form-control" id="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" id="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Тип передвижения</label>
+                        <select class="form-select" id="transportType" required>
+                            <option value="pedestrian">Пешком</option>
+                            <option value="bicycle">Велосипед</option>
+                            <option value="moto">Мотоцикл</option>
+                            <option value="auto">Автомобиль</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Дополнительные поля для транспорта -->
+                    <div id="vehicleFields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">Номер транспорта</label>
+                            <input type="text" class="form-control" id="vehicleNumber">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Статус документов</label>
+                            <select class="form-select" id="documentsStatus">
+                                <option value="OK">Все в порядке</option>
+                                <option value="PROBLEM">Проблема с документами</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Поле для марки авто -->
+                    <div class="mb-3" id="vehicleModelField" style="display: none;">
+                        <label class="form-label">Марка автомобиля</label>
+                        <input type="text" class="form-control" id="vehicleModel">
+                    </div>
+
+                    <!-- Поле статуса онбординга (только для редактирования) -->
+                    <div class="mb-3" id="onboardingStatusField" style="display: none;">
+                        <label class="form-label">Статус онбординга</label>
+                        <select class="form-select" id="onboardingStatus">
+                            <option value="IN_PROGRESS">Оформляется</option>
+                            <option value="VERIFIED">Оформлен</option>
+                            <option value="REJECTED_BY_HUB">Отказ хаба</option>
+                            <option value="REJECTED_BY_COURIER">Отказ курьера</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveButton">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', path='js/statistics.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadCouriers();
+    // Загрузка начальных данных
+    loadPersonalStatistics();
+    
+    // Обработчики переключения вкладок
+    const tabElements = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabElements.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(event) {
+            if (event.target.id === 'myStatsTab') {
+                loadPersonalStatistics();
+            } else if (event.target.id === 'deptStatsTab') {
+                loadDepartmentStatistics();
+            }
+        });
+    });
+});
+
+async function loadCouriers() {
+    try {
+        const response = await fetch('/api/couriers');
+        const couriers = await response.json();
+        
+        const tbody = document.getElementById('couriersTableBody');
+        tbody.innerHTML = '';
+        
+        couriers.forEach((courier, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${courier.full_name}</td>
+                <td>${courier.phone}</td>
+                <td>
+                    <span class="badge ${getOnboardingStatusBadgeClass(courier.onboarding_status)}">
+                        ${translateOnboardingStatus(courier.onboarding_status)}
+                    </span>
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary" onclick="viewCourier(${courier.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="editCourier(${courier.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${(courier.onboarding_status === 'IN_PROGRESS' || courier.onboarding_status === 'REJECTED_BY_COURIER') ? `
+                            <button class="btn btn-sm btn-success" onclick="verifyCourier(${courier.id})" title="Подтвердить">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Ошибка при загрузке курьеров:', error);
+        showError('Ошибка при загрузке списка курьеров');
+    }
+}
+
+function getOnboardingStatusBadgeClass(status) {
+    const statusClasses = {
+        'IN_PROGRESS': 'bg-warning',
+        'VERIFIED': 'bg-success',
+        'REJECTED_BY_HUB': 'bg-danger',
+        'REJECTED_BY_COURIER': 'bg-danger'
+    };
+    return statusClasses[status] || 'bg-secondary';
+}
+
+function translateOnboardingStatus(status) {
+    const statusMap = {
+        'IN_PROGRESS': 'Оформляется',
+        'VERIFIED': 'Оформлен',
+        'REJECTED_BY_HUB': 'Отказ хаба',
+        'REJECTED_BY_COURIER': 'Отказ курьера'
+    };
+    return statusMap[status] || 'Не определен';
+}
+
+async function loadPersonalStatistics() {
+    try {
+        const response = await fetch('/stats/personal/data');
+        const data = await response.json();
+        document.getElementById('myOrders').textContent = data.my_orders;
+        document.getElementById('completedOrders').textContent = data.completed_orders;
+        document.getElementById('cancelledOrders').textContent = data.cancelled_orders;
+    } catch (error) {
+        console.error('Ошибка загрузки личной статистики:', error);
+    }
+}
+
+async function loadDepartmentStatistics() {
+    try {
+        const response = await fetch('/stats/department/data');
+        const data = await response.json();
+        document.getElementById('deptOrders').textContent = data.total_orders;
+        document.getElementById('deptCompletedOrders').textContent = data.completed_orders;
+        document.getElementById('deptCancelledOrders').textContent = data.cancelled_orders;
+    } catch (error) {
+        console.error('Ошибка загрузки статистики отдела:', error);
+    }
+}
+
+async function viewCourier(id) {
+    try {
+        const response = await fetch(`/api/couriers/${id}`);
+        const courier = await response.json();
+        
+        document.getElementById('viewFullName').textContent = courier.full_name;
+        document.getElementById('viewPhone').textContent = courier.phone;
+        
+        // Обновляем отображение статуса онбординга
+        const statusElement = document.getElementById('viewOnboardingStatus');
+        statusElement.className = `badge ${getOnboardingStatusBadgeClass(courier.onboarding_status)}`;
+        statusElement.textContent = translateOnboardingStatus(courier.onboarding_status);
+        
+        // ... остальной код для отображения других полей ...
+        
+        const modal = new bootstrap.Modal(document.getElementById('viewCourierModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Ошибка при загрузке данных курьера:', error);
+    }
+}
+
+// Добавляем функцию для подтверждения курьера
+async function verifyCourier(id) {
+    try {
+        const response = await fetch(`/api/couriers/${id}/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при подтверждении курьера');
+        }
+
+        await loadCouriers(); // Перезагружаем список
+        showSuccess('Курьер успешно подтвержден');
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showError(error.message);
+    }
+}
+
+// Добавляем функцию для отображения сообщений об успехе
+function showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success alert-dismissible fade show';
+    successDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container');
+    container.insertBefore(successDiv, container.firstChild);
+    
+    setTimeout(() => {
+        successDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.stats-box {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.stats-box h6 {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.stats-box h3 {
+    color: #212529;
+    margin-bottom: 0;
+    font-size: 2rem;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #495057;
+    padding: 1rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    background: none;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}

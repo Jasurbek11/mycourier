@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Склад | MyCourier{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Управление оборудованием</h2>
+                <div class="mb-4">
+                    <button class="btn btn-primary" onclick="showAddEquipmentForm()">
+                        Добавить оборудование
+                    </button>
+                </div>
+                
+                <div id="equipmentList" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Серийный номер</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equipmentTableBody">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления оборудования -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить оборудование</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEquipmentForm" onsubmit="addEquipment(event)">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="serialNumber" class="form-label">Серийный номер</label>
+                        <input type="text" class="form-control" id="serialNumber" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/auth.js') }}"></script>
+<script src="{{ url_for('static', path='js/warehouse.js') }}"></script>
+{% endblock %} 

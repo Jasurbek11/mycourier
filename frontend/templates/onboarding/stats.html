@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1>Статистика</h1>
+        </div>
+        <div class="col-md-6">
+            <div class="d-flex justify-content-end">
+                <select class="form-select w-auto" id="statsFilter">
+                    <option value="personal">Моя статистика</option>
+                    <option value="employee">Сотрудник</option>
+                    <option value="department">Весь отдел</option>
+                </select>
+                <select class="form-select w-auto ms-2" id="employeeSelect" style="display: none;">
+                    <!-- Сотрудники будут добавлены через JavaScript -->
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Общая статистика</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h6>Всего курьеров</h6>
+                                <span id="total-couriers">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h6>Активные</h6>
+                                <span id="active-couriers">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h6>Неактивные</h6>
+                                <span id="inactive-couriers">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-box">
+                                <h6>Заблокированные</h6>
+                                <span id="blocked-couriers">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">График регистраций</h5>
+                    <canvas id="registrations-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', path='js/statistics.js') }}"></script>
+{% endblock %} 

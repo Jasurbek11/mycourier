@@ -1,0 +1,38 @@
+mycourier/
+├── .env.example
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── src/
+│   ├── main.py
+│   ├── config.py
+│   ├── database.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── courier.py
+│   │   ├── user.py
+│   │   └── warehouse.py
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── onboarding.py
+│   │   ├── activation.py
+│   │   ├── warehouse.py
+│   │   └── analytics.py
+│   └── schemas/
+│       ├── __init__.py
+│       ├── courier.py
+│       └── warehouse.py
+├── migrations/
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+└── frontend/
+    ├── static/
+    │   ├── css/
+    │   └── js/
+    └── templates/
+        ├── base.html
+        ├── onboarding.html
+        └── warehouse.html 

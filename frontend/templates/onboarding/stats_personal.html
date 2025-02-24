@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Моя статистика | MyCourier{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Моя статистика</h2>
+        <div class="btn-group">
+            <a href="/onboarding/stats/personal" class="btn btn-primary active">Моя статистика</a>
+            <a href="/onboarding/stats/department" class="btn btn-outline-primary">Статистика отдела</a>
+        </div>
+    </div>
+
+    <!-- Период -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-end">
+                <select class="form-select w-auto" id="periodSelect">
+                    <option value="week">За неделю</option>
+                    <option value="month">За месяц</option>
+                    <option value="year">За год</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Мои курьеры</h6>
+                    <h2 class="card-title" id="personalTotalCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Активных</h6>
+                    <h2 class="card-title" id="personalActiveCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Новых</h6>
+                    <h2 class="card-title" id="personalNewCouriers">0</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Конверсия</h6>
+                    <h2 class="card-title" id="personalConversion">0%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/stats_personal.js') }}"></script>
+{% endblock %} 

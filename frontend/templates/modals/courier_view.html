@@ -1,0 +1,53 @@
+<div class="modal fade" id="viewCourierModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Просмотр курьера</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Основная информация -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">ФИО</label>
+                            <p id="viewFullName" class="form-control-static">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Телефон</label>
+                            <p id="viewPhone" class="form-control-static">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Тип передвижения</label>
+                            <p id="viewTransportType" class="form-control-static">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Статус онбординга</label>
+                            <p id="viewOnboardingStatus" class="form-control-static">-</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Поля для транспорта -->
+                        <div id="viewVehicleFields" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Номер транспорта</label>
+                                <p id="viewVehicleNumber" class="form-control-static">-</p>
+                            </div>
+                            <div class="mb-3" id="viewVehicleModelField">
+                                <label class="form-label">Модель транспорта</label>
+                                <p id="viewVehicleModel" class="form-control-static">-</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Статус документов на ТС</label>
+                                <p id="viewVehicleDocs" class="form-control-static">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div> 
